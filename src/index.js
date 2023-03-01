@@ -11,10 +11,7 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
-
-  const user = users.find((user) => {
-    user.username === username;
-  });
+  const user = users.find((user) => user.username === username);
 
   if (!user) {
     return response.status(404).json({ error: "User not found" });
@@ -31,8 +28,7 @@ function checksCreateTodosUserAvailability(request, response, next) {
   if (user.pro === true) {
     return next();
   }
-
-  if (user.todos > 10) {
+  if (user.todos.length >= 10) {
     return response
       .status(403)
       .json({ error: "You need plan pro to continue add todos" });
@@ -42,28 +38,30 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  const { username } = request.headers;
   const { id } = request.params;
+  const { username } = request.headers;
 
   if (validate(id) != true) {
     return response.status(400).json({ error: "Id invalid" });
   }
 
-  const user = users.find((user) => {
-    user.username === username;
-  });
+  const user = users.find((user) => user.username === username);
 
   if (!user) {
     return response.status(404).json({ error: "User not found" });
+  }
+
+  const todo = user.todos.find((todo) => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo not found" });
   }
 }
 
 function findUserById(request, response, next) {
   const { id } = request.params;
 
-  const user = users.find((user) => {
-    user.id === id;
-  });
+  const user = users.find((user) => user.id === id);
 
   if (!user) {
     return response.status(404).json({ error: "User not found" });
@@ -102,6 +100,10 @@ app.get("/users/:id", findUserById, (request, response) => {
   const { user } = request;
 
   return response.json(user);
+});
+
+app.get("/users", (request, response) => {
+  return response.json(users);
 });
 
 app.patch("/users/:id/pro", findUserById, (request, response) => {
@@ -179,7 +181,7 @@ app.delete(
 
     user.todos.splice(todoIndex, 1);
 
-    return response.status(204).send();
+    return response.status(404).send();
   }
 );
 
