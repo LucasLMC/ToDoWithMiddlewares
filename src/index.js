@@ -56,6 +56,11 @@ function checksTodoExists(request, response, next) {
   if (!todo) {
     return response.status(404).json({ error: "Todo not found" });
   }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
@@ -102,10 +107,6 @@ app.get("/users/:id", findUserById, (request, response) => {
   return response.json(user);
 });
 
-app.get("/users", (request, response) => {
-  return response.json(users);
-});
-
 app.patch("/users/:id/pro", findUserById, (request, response) => {
   const { user } = request;
 
@@ -149,6 +150,7 @@ app.post(
 );
 
 app.put("/todos/:id", checksTodoExists, (request, response) => {
+  console.log("hehe");
   const { title, deadline } = request.body;
   const { todo } = request;
 
@@ -181,7 +183,7 @@ app.delete(
 
     user.todos.splice(todoIndex, 1);
 
-    return response.status(404).send();
+    return response.status(204).send();
   }
 );
 
